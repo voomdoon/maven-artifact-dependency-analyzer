@@ -18,7 +18,8 @@ public class PomUtil {
 	/**
 	 * Record to wrap groupId and artifactId from a pom.xml.
 	 */
-	public record PomId(String groupId, String artifactId) {}
+	public record PomId(String groupId, String artifactId) {
+	}
 
 	/**
 	 * DOCME add JavaDoc for method readGroupAndArtifactId
