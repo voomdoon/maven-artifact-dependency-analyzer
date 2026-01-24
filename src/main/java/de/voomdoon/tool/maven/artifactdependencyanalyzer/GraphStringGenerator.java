@@ -8,6 +8,8 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
 
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
+
 /**
  * DOCME add JavaDoc for
  *
@@ -17,8 +19,8 @@ import org.jgrapht.nio.dot.DOTExporter;
  */
 public class GraphStringGenerator {
 
-	public String convert(Graph<PomUtil.PomId, DefaultEdge> graph) {
-		DOTExporter<PomUtil.PomId, DefaultEdge> exporter = new DOTExporter<>(
+	public String convert(Graph<PomId, DefaultEdge> graph) {
+		DOTExporter<PomId, DefaultEdge> exporter = new DOTExporter<>(
 				v -> (v.groupId() + "_" + v.artifactId()).replaceAll("[^A-Za-z0-9_]", "_"));
 
 		exporter.setVertexAttributeProvider(

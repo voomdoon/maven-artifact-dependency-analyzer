@@ -13,7 +13,9 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
  *
  * @since 0.1.0
  */
-public class PomUtil {
+public class PomReader {
+
+	private final Path pomFile;
 
 	/**
 	 * Record to wrap groupId and artifactId from a pom.xml.
@@ -22,14 +24,22 @@ public class PomUtil {
 	}
 
 	/**
+	 * Creates a new PomReader for the given pom.xml file.
+	 * 
+	 * @param pomFile the path to the pom.xml file
+	 */
+	public PomReader(Path pomFile) {
+		this.pomFile = pomFile;
+	}
+
+	/**
 	 * DOCME add JavaDoc for method readGroupAndArtifactId
 	 * 
-	 * @param pomFile
 	 * @return
 	 * @throws Exception
 	 * @since 0.1.0
 	 */
-	public static PomId readGroupAndArtifactId(Path pomFile) throws Exception {
+	public PomId readGroupAndArtifactId() throws Exception {
 		MavenXpp3Reader reader = new MavenXpp3Reader();
 
 		try (FileReader fileReader = new FileReader(pomFile.toFile())) {

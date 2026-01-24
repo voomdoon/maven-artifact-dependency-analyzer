@@ -6,7 +6,7 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.junit.jupiter.api.Test;
 
-import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomUtil.PomId;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
 
 /**
  * DOCME add JavaDoc for

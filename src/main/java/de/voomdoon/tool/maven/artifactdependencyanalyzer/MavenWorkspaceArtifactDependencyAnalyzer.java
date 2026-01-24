@@ -11,7 +11,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomUtil.PomId;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
 
 /**
  * DOCME add JavaDoc for
@@ -29,12 +29,12 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * @return
 	 * @since 0.1.0
 	 */
-	public Graph<PomUtil.PomId, DefaultEdge> run(MavenWorkspaceArtifactDependencyAnalyzerInput input) {
-		Graph<PomUtil.PomId, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+	public Graph<PomId, DefaultEdge> run(MavenWorkspaceArtifactDependencyAnalyzerInput input) {
+		Graph<PomId, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
 		collectPomFiles(Path.of(input.getInputDirectory())).stream().map(pomPath -> {
 			try {
-				return PomUtil.readGroupAndArtifactId(pomPath);
+				return new PomReader(pomPath).readGroupAndArtifactId();
 			} catch (Exception e) {
 				throw new RuntimeException("Failed to read groupId/artifactId from: " + pomPath, e);
 			}

@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
-import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomUtil.PomId;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
 import de.voomdoon.util.cli.Program;
 import de.voomdoon.util.cli.args.Option;
 
