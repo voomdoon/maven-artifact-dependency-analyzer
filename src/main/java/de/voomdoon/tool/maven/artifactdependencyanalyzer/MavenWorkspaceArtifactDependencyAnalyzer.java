@@ -3,14 +3,18 @@ package de.voomdoon.tool.maven.artifactdependencyanalyzer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.maven.model.Dependency;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
+import de.voomdoon.logging.LogManager;
+import de.voomdoon.logging.Logger;
 import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
 
 /**
@@ -23,6 +27,43 @@ import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
 public class MavenWorkspaceArtifactDependencyAnalyzer {
 
 	/**
+	 * DOCME add JavaDoc for MavenWorkspaceArtifactDependencyAnalyzer
+	 *
+	 * @author André Schulz
+	 *
+	 * @since 0.1.0
+	 */
+	private class ModuleData {
+
+		/**
+		 * @since 0.1.0
+		 */
+		private List<Dependency> dependencies;
+
+		/**
+		 * @since 0.1.0
+		 */
+		private PomId id;
+
+		/**
+		 * DOCME add JavaDoc for constructor ModuleData
+		 * 
+		 * @param id
+		 * @param dependencies
+		 * @since 0.1.0
+		 */
+		public ModuleData(PomId id, List<Dependency> dependencies) {
+			this.id = id;
+			this.dependencies = dependencies;
+		}
+	}
+
+	/**
+	 * @since 0.1.0
+	 */
+	private final Logger logger = LogManager.getLogger(getClass());
+
+	/**
 	 * DOCME add JavaDoc for method run
 	 * 
 	 * @param input
@@ -32,13 +73,29 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	public Graph<PomId, DefaultEdge> run(MavenWorkspaceArtifactDependencyAnalyzerInput input) {
 		Graph<PomId, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
 
+		List<ModuleData> modules = new ArrayList<>();
+
 		collectPomFiles(Path.of(input.getInputDirectory())).stream().map(pomPath -> {
 			try {
-				return new PomReader(pomPath).readGroupAndArtifactId();
+				PomReader reader = new PomReader(pomPath);
+				PomId id = reader.readGroupAndArtifactId();
+				List<Dependency> dependencies = reader.getDependencies();
+				modules.add(new ModuleData(id, dependencies));
+				logger.debug("dependencies for " + id + ":" + ((dependencies.isEmpty() ? "" : "\n")
+						+ dependencies.stream().map(Dependency::toString).collect(Collectors.joining("\n"))));
+
+				return id;
 			} catch (Exception e) {
 				throw new RuntimeException("Failed to read groupId/artifactId from: " + pomPath, e);
 			}
 		}).filter(getFilter(input)).forEach(graph::addVertex);
+
+		for (ModuleData module : modules) {
+			for (Dependency dependency : module.dependencies) {
+				PomId dependencyPomId = new PomId(dependency.getGroupId(), dependency.getArtifactId());
+				graph.addEdge(module.id, dependencyPomId);
+			}
+		}
 
 		return graph;
 	}

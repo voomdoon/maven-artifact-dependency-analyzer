@@ -27,11 +27,52 @@ import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
 class MavenWorkspaceArtifactDependencyAnalyzerTest {
 
 	/**
+	 * Tests for the edges of the generated graph.
+	 *
+	 * @author André Schulz
+	 *
+	 * @since 0.1.0
+	 */
+	@Nested
+	class EdgesTest {
+
+		/**
+		 * Tests for edges based on dependencies.
+		 *
+		 * @author André Schulz
+		 *
+		 * @since 0.1.0
+		 */
+		@Nested
+		@ExtendWith(TempFileExtension.class)
+		class DeclaredDependencyEdgesTest {
+
+			/**
+			 * @since 0.1.0
+			 */
+			private static final String GROUP_ID = "com.test";
+
+			/**
+			 * @since 0.1.0
+			 */
+			@Test
+			void test(@TempInputDirectory String inputDirectory) {
+				Graph<PomId, ?> actual = run("dependency", inputDirectory);
+
+				assertThat(actual.edgeSet()).hasSize(1);
+				Object actualEdge = actual.getEdge(new PomId(GROUP_ID, "test-service"),
+						new PomId(GROUP_ID, "test-util"));
+				assertThat(actualEdge).isNotNull();
+			}
+		}
+	}
+
+	/**
 	 * Tests for the vertices of the generated graph.
 	 * 
 	 * @author André Schulz
 	 *
-	 * @since DOCME add inception version number
+	 * @since 0.1.0
 	 */
 	@Nested
 	@ExtendWith(TempFileExtension.class)
