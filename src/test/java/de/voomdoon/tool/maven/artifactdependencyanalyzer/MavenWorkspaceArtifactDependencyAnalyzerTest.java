@@ -50,11 +50,6 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 			/**
 			 * @since 0.1.0
 			 */
-			private static final String GROUP_ID = "com.test";
-
-			/**
-			 * @since 0.1.0
-			 */
 			@Test
 			void test(@TempInputDirectory String inputDirectory) {
 				Graph<PomId, ?> actual = run("dependency", inputDirectory);
@@ -62,6 +57,31 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 				assertThat(actual.edgeSet()).hasSize(1);
 				Object actualEdge = actual.getEdge(new PomId(GROUP_ID, "test-service"),
 						new PomId(GROUP_ID, "test-util"));
+				assertThat(actualEdge).isNotNull();
+			}
+		}
+
+		/**
+		 * Tests for edges based on parent-child relationships.
+		 *
+		 * @author André Schulz
+		 *
+		 * @since 0.1.0
+		 */
+		@Nested
+		@ExtendWith(TempFileExtension.class)
+		class ParentEdgesTest {
+
+			/**
+			 * @since 0.1.0
+			 */
+			@Test
+			void test(@TempInputDirectory String inputDirectory) {
+				Graph<PomId, ?> actual = run("parent", inputDirectory);
+
+				assertThat(actual.edgeSet()).hasSize(1);
+				Object actualEdge = actual.getEdge(new PomId(GROUP_ID, "test-util"),
+						new PomId(GROUP_ID, "test-parent"));
 				assertThat(actualEdge).isNotNull();
 			}
 		}
@@ -132,6 +152,11 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 			assertThat(actual.vertexSet().stream().map(PomId::artifactId)).doesNotContain("test-artifact");
 		}
 	}
+
+	/**
+	 * @since 0.1.0
+	 */
+	private static final String GROUP_ID = "com.test";
 
 	/**
 	 * @since 0.1.0

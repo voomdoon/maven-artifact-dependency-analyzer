@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Parent;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -46,14 +47,21 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 		private PomId id;
 
 		/**
+		 * @since 0.1.0
+		 */
+		private PomReader reader;
+
+		/**
 		 * DOCME add JavaDoc for constructor ModuleData
 		 * 
 		 * @param id
+		 * @param reader
 		 * @param dependencies
 		 * @since 0.1.0
 		 */
-		public ModuleData(PomId id, List<Dependency> dependencies) {
+		public ModuleData(PomId id, PomReader reader, List<Dependency> dependencies) {
 			this.id = id;
+			this.reader = reader;
 			this.dependencies = dependencies;
 		}
 	}
@@ -75,12 +83,74 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 
 		List<ModuleData> modules = new ArrayList<>();
 
+		addVertecies(input, graph, modules);
+		addEdges(graph, modules);
+
+		return graph;
+	}
+
+	/**
+	 * DOCME add JavaDoc for method addDependencyEdges
+	 * 
+	 * @param graph
+	 * @param modules
+	 * @since DOCME add inception version number
+	 */
+	private void addDependencyEdges(Graph<PomId, DefaultEdge> graph, List<ModuleData> modules) {
+		for (ModuleData module : modules) {
+			for (Dependency dependency : module.dependencies) {
+				PomId dependencyPomId = new PomId(dependency.getGroupId(), dependency.getArtifactId());
+				graph.addEdge(module.id, dependencyPomId);
+			}
+		}
+	}
+
+	/**
+	 * DOCME add JavaDoc for method addEdges
+	 * 
+	 * @param graph
+	 * @param modules
+	 * @since 0.1.0
+	 */
+	private void addEdges(Graph<PomId, DefaultEdge> graph, List<ModuleData> modules) {
+		addParentEdges(graph, modules);
+		addDependencyEdges(graph, modules);
+	}
+
+	/**
+	 * DOCME add JavaDoc for method addParentEdges
+	 * 
+	 * @param graph
+	 * @param modules
+	 * @since 0.1.0
+	 */
+	private void addParentEdges(Graph<PomId, DefaultEdge> graph, List<ModuleData> modules) {
+		for (ModuleData module : modules) {
+			Parent parent = module.reader.getModel().getParent();
+
+			if (parent != null) {
+				PomId parentPomId = new PomId(parent.getGroupId(), parent.getArtifactId());
+				graph.addEdge(module.id, parentPomId);
+			}
+		}
+	}
+
+	/**
+	 * DOCME add JavaDoc for method addVertecies
+	 * 
+	 * @param input
+	 * @param graph
+	 * @param modules
+	 * @since 0.1.0
+	 */
+	private void addVertecies(MavenWorkspaceArtifactDependencyAnalyzerInput input, Graph<PomId, DefaultEdge> graph,
+			List<ModuleData> modules) {
 		collectPomFiles(Path.of(input.getInputDirectory())).stream().map(pomPath -> {
 			try {
 				PomReader reader = new PomReader(pomPath);
 				PomId id = reader.readGroupAndArtifactId();
 				List<Dependency> dependencies = reader.getDependencies();
-				modules.add(new ModuleData(id, dependencies));
+				modules.add(new ModuleData(id, reader, dependencies));
 				logger.debug("dependencies for " + id + ":" + ((dependencies.isEmpty() ? "" : "\n")
 						+ dependencies.stream().map(Dependency::toString).collect(Collectors.joining("\n"))));
 
@@ -89,15 +159,6 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 				throw new RuntimeException("Failed to read groupId/artifactId from: " + pomPath, e);
 			}
 		}).filter(getFilter(input)).forEach(graph::addVertex);
-
-		for (ModuleData module : modules) {
-			for (Dependency dependency : module.dependencies) {
-				PomId dependencyPomId = new PomId(dependency.getGroupId(), dependency.getArtifactId());
-				graph.addEdge(module.id, dependencyPomId);
-			}
-		}
-
-		return graph;
 	}
 
 	/**

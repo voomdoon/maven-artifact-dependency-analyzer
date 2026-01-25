@@ -19,6 +19,13 @@ import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
  */
 public class GraphStringGenerator {
 
+	/**
+	 * DOCME add JavaDoc for method convert
+	 * 
+	 * @param graph
+	 * @return
+	 * @since DOCME add inception version number
+	 */
 	public String convert(Graph<PomId, DefaultEdge> graph) {
 		DOTExporter<PomId, DefaultEdge> exporter = new DOTExporter<>(
 				v -> (v.groupId() + "_" + v.artifactId()).replaceAll("[^A-Za-z0-9_]", "_"));

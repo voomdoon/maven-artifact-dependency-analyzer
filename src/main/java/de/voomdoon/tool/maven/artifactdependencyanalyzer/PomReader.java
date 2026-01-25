@@ -57,6 +57,14 @@ public class PomReader {
 	}
 
 	/**
+	 * @return model
+	 * @since 0.1.0
+	 */
+	public Model getModel() {
+		return model;
+	}
+
+	/**
 	 * DOCME add JavaDoc for method readGroupAndArtifactId
 	 * 
 	 * @return
