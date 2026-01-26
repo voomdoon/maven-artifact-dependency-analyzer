@@ -106,7 +106,7 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 		 */
 		@Test
 		void test_1pom_2_containsArtifactCoordinates(@TempInputDirectory String inputDirectory) {
-			Graph<PomId, ?> actual = run("1pom_2", inputDirectory);
+			Graph<PomId, ?> actual = run("artifact2", inputDirectory);
 
 			assertThat(actual.vertexSet().stream().map(PomId::artifactId)).contains("test-artifact2");
 		}
@@ -116,9 +116,9 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 		 */
 		@Test
 		void test_1pom_containsArtifactCoordinates(@TempInputDirectory String inputDirectory) {
-			Graph<PomId, ?> actual = run("1pom", inputDirectory);
+			Graph<PomId, ?> actual = run("artifact1", inputDirectory);
 
-			assertThat(actual.vertexSet().stream().map(PomId::artifactId)).contains("test-artifact");
+			assertThat(actual.vertexSet().stream().map(PomId::artifactId)).contains("test-artifact1");
 		}
 
 		/**
@@ -138,9 +138,9 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 		void test_option_groupIdIncludePattern_exactMatch(@TempInputDirectory String inputDirectory) {
 			input.setGroupIdIncludePattern(Pattern.compile("com.test"));
 
-			Graph<PomId, ?> actual = run("1pom", inputDirectory);
+			Graph<PomId, ?> actual = run("artifact1", inputDirectory);
 
-			assertThat(actual.vertexSet().stream().map(PomId::artifactId)).contains("test-artifact");
+			assertThat(actual.vertexSet().stream().map(PomId::artifactId)).contains("test-artifact1");
 		}
 
 		/**
@@ -150,7 +150,7 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 		void test_option_groupIdIncludePattern_noMatch(@TempInputDirectory String inputDirectory) {
 			input.setGroupIdIncludePattern(Pattern.compile("something"));
 
-			Graph<PomId, ?> actual = run("1pom", inputDirectory);
+			Graph<PomId, ?> actual = run("artifact1", inputDirectory);
 
 			assertThat(actual.vertexSet().stream().map(PomId::artifactId)).doesNotContain("test-artifact");
 		}

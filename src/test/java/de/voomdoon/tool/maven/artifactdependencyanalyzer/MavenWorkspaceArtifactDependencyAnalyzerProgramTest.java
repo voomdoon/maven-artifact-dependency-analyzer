@@ -32,7 +32,7 @@ class MavenWorkspaceArtifactDependencyAnalyzerProgramTest extends TestBase {
 	 */
 	@Test
 	void test_1pom(@TempInputDirectory String inputDirectory) throws InvocationTargetException {
-		SystemPrintStreamCapturer output = run("1pom", inputDirectory);
+		SystemPrintStreamCapturer output = run("artifact1", inputDirectory);
 
 		assertThat(output.getOut()).contains("test-artifact");
 	}

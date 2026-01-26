@@ -4,6 +4,6 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.test</groupId>
-	<artifactId>test-artifact</artifactId>
+	<artifactId>test-artifact1</artifactId>
 	<version>0.1.0</version>
 </project>
