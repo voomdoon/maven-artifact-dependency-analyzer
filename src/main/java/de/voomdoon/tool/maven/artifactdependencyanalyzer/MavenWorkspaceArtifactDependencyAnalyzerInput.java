@@ -2,6 +2,8 @@ package de.voomdoon.tool.maven.artifactdependencyanalyzer;
 
 import java.util.regex.Pattern;
 
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
+
 /**
  * DOCME add JavaDoc for
  *
@@ -14,12 +16,38 @@ public class MavenWorkspaceArtifactDependencyAnalyzerInput {
 	/**
 	 * @since 0.1.0
 	 */
+	private PomId focus;
+
+	/**
+	 * @since 0.1.0
+	 */
+	private FocusDirection focusDirection = FocusDirection.BOTH;
+
+	/**
+	 * @since 0.1.0
+	 */
 	private Pattern groupIdIncludePattern;
 
 	/**
 	 * @since 0.1.0
 	 */
 	private String inputDirectory;
+
+	/**
+	 * @return focus
+	 * @since 0.1.0
+	 */
+	public PomId getFocus() {
+		return focus;
+	}
+
+	/**
+	 * @return focusDirection
+	 * @since 0.1.0
+	 */
+	public FocusDirection getFocusDirection() {
+		return focusDirection;
+	}
 
 	/**
 	 * @return groupIdIncludePattern
@@ -45,6 +73,24 @@ public class MavenWorkspaceArtifactDependencyAnalyzerInput {
 	 */
 	public void setDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
+	}
+
+	/**
+	 * @param focus
+	 *            focus
+	 * @since 0.1.0
+	 */
+	public void setFocus(PomId focus) {
+		this.focus = focus;
+	}
+
+	/**
+	 * @param focusDirection
+	 *            focusDirection
+	 * @since 0.1.0
+	 */
+	public void setFocusDirection(FocusDirection focusDirection) {
+		this.focusDirection = focusDirection;
 	}
 
 	/**

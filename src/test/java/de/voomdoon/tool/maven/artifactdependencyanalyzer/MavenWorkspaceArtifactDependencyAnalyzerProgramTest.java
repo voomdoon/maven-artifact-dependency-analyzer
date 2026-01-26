@@ -15,6 +15,7 @@ import de.voomdoon.testing.file.TempFileExtension;
 import de.voomdoon.testing.file.TempInputDirectory;
 import de.voomdoon.testing.system.SystemPrintStreamCapturer;
 import de.voomdoon.testing.tests.TestBase;
+import de.voomdoon.util.cli.testing.ProgramTestingUtil;
 
 /**
  * DOCME add JavaDoc for
@@ -27,16 +28,45 @@ import de.voomdoon.testing.tests.TestBase;
 class MavenWorkspaceArtifactDependencyAnalyzerProgramTest extends TestBase {
 
 	/**
+	 * @since 0.1.0
+	 */
+	private ArgumentsTestHandler args = new ArgumentsTestHandler();
+
+	/**
 	 * @throws InvocationTargetException
 	 * @since 0.1.0
 	 */
 	@Test
-	void test_1pom(@TempInputDirectory String inputDirectory) throws InvocationTargetException {
+	void test(@TempInputDirectory String inputDirectory) throws InvocationTargetException {
 		SystemPrintStreamCapturer output = run("artifact1", inputDirectory);
 
 		assertThat(output.getOut()).contains("test-artifact");
 	}
 
+	/**
+	 * @throws InvocationTargetException
+	 * @since 0.1.0
+	 */
+	@Test
+	void test_optionFocus(@TempInputDirectory String inputDirectory) throws InvocationTargetException {
+		logTestStart();
+
+		args.addOption("focus", "com.test:test-artifact1");
+
+		SystemPrintStreamCapturer output = run("2poms", inputDirectory);
+
+		assertThat(output.getOut()).doesNotContain("test-artifact2");
+	}
+
+	/**
+	 * DOCME add JavaDoc for method run
+	 * 
+	 * @param testData
+	 * @param inputDirectory
+	 * @return
+	 * @throws InvocationTargetException
+	 * @since 0.1.0
+	 */
 	private SystemPrintStreamCapturer run(String testData, String inputDirectory) throws InvocationTargetException {
 		try {
 			FileUtils.copyDirectory(new File("src/test/resources/workspace/" + testData), new File(inputDirectory));
@@ -44,8 +74,10 @@ class MavenWorkspaceArtifactDependencyAnalyzerProgramTest extends TestBase {
 			throw new RuntimeException(e);
 		}
 
-		ThrowingRunnable action = () -> MavenWorkspaceArtifactDependencyAnalyzerProgram
-				.main(new String[] { inputDirectory });
+		args.addValue(inputDirectory);
+
+		ProgramTestingUtil.enableTestingMode();
+		ThrowingRunnable action = () -> MavenWorkspaceArtifactDependencyAnalyzerProgram.main(args.toArgsArray());
 
 		SystemPrintStreamCapturer output = SystemPrintStreamCapturer.run(action);
 

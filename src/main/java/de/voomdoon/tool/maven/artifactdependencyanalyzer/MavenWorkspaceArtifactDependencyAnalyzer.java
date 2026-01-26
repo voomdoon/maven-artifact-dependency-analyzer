@@ -4,14 +4,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Parent;
 import org.jgrapht.Graph;
+import org.jgrapht.graph.AsSubgraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.EdgeReversedGraph;
+import org.jgrapht.traverse.BreadthFirstIterator;
+import org.jgrapht.traverse.GraphIterator;
 
 import de.voomdoon.logging.LogManager;
 import de.voomdoon.logging.Logger;
@@ -26,6 +32,90 @@ import de.voomdoon.tool.maven.artifactdependencyanalyzer.model.DependencyEdge;
  * @since 0.1.0
  */
 public class MavenWorkspaceArtifactDependencyAnalyzer {
+
+	/**
+	 * DOCME add JavaDoc for MavenWorkspaceArtifactDependencyAnalyzer
+	 *
+	 * @author André Schulz
+	 *
+	 * @since 0.1.0
+	 */
+	private class FocusHandler {
+
+		/**
+		 * DOCME add JavaDoc for method addDownstreamVerticies
+		 * 
+		 * @param graph
+		 * @param input
+		 * @param reachable
+		 * @since 0.1.0
+		 */
+		private void addDownstreamVerticies(Graph<PomId, DependencyEdge> graph,
+				MavenWorkspaceArtifactDependencyAnalyzerInput input, Set<PomReader.PomId> reachable) {
+			GraphIterator<PomReader.PomId, ?> it;
+			Graph<PomReader.PomId, DependencyEdge> reversed = new EdgeReversedGraph<>(graph);
+			it = new BreadthFirstIterator<>(reversed, input.getFocus());
+
+			while (it.hasNext()) {
+				reachable.add(it.next());
+			}
+		}
+
+		/**
+		 * DOCME add JavaDoc for method addUpstreamVerticies
+		 * 
+		 * @param graph
+		 * @param input
+		 * @param reachable
+		 * @since 0.1.0
+		 */
+		private void addUpstreamVerticies(Graph<PomId, DependencyEdge> graph,
+				MavenWorkspaceArtifactDependencyAnalyzerInput input, Set<PomReader.PomId> reachable) {
+			GraphIterator<PomReader.PomId, ?> it = new BreadthFirstIterator<>(graph, input.getFocus());
+
+			while (it.hasNext()) {
+				reachable.add(it.next());
+			}
+		}
+
+		/**
+		 * DOCME add JavaDoc for method applyFocus
+		 * 
+		 * @param graph
+		 * @param input
+		 * @return
+		 * @throws FocusNotFoundException
+		 * @since 0.1.0
+		 */
+		private Graph<PomId, DependencyEdge> applyFocus(Graph<PomId, DependencyEdge> graph,
+				MavenWorkspaceArtifactDependencyAnalyzerInput input) throws FocusNotFoundException {
+			if (input.getFocus() == null) {
+				return graph;
+			} else if (!graph.containsVertex(input.getFocus())) {
+				throw new FocusNotFoundException(input.getFocus());
+			}
+
+			return getFocusSubgraph(graph, input);
+		}
+
+		/**
+		 * DOCME add JavaDoc for method getFocusSubgraph
+		 * 
+		 * @param graph
+		 * @param input
+		 * @return
+		 * @since 0.1.0
+		 */
+		private Graph<PomId, DependencyEdge> getFocusSubgraph(Graph<PomId, DependencyEdge> graph,
+				MavenWorkspaceArtifactDependencyAnalyzerInput input) {
+			Set<PomReader.PomId> reachable = new HashSet<>();
+			reachable.add(input.getFocus());
+			addUpstreamVerticies(graph, input, reachable);
+			addDownstreamVerticies(graph, input, reachable);
+
+			return new AsSubgraph<>(graph, reachable);
+		}
+	}
 
 	/**
 	 * DOCME add JavaDoc for MavenWorkspaceArtifactDependencyAnalyzer
@@ -69,6 +159,11 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	/**
 	 * @since 0.1.0
 	 */
+	private final FocusHandler focusHandler = new FocusHandler();
+
+	/**
+	 * @since 0.1.0
+	 */
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	/**
@@ -76,15 +171,19 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * 
 	 * @param input
 	 * @return
+	 * @throws FocusNotFoundException
 	 * @since 0.1.0
 	 */
-	public Graph<PomId, DependencyEdge> run(MavenWorkspaceArtifactDependencyAnalyzerInput input) {
+	public Graph<PomId, DependencyEdge> run(MavenWorkspaceArtifactDependencyAnalyzerInput input)
+			throws FocusNotFoundException {
 		Graph<PomId, DependencyEdge> graph = new DefaultDirectedGraph<>(DependencyEdge.class);
 
 		List<ModuleData> modules = new ArrayList<>();
 
 		addVertecies(input, graph, modules);
-		addEdges(graph, modules);
+		addEdges(graph, modules, input);
+
+		graph = focusHandler.applyFocus(graph, input);
 
 		return graph;
 	}
@@ -94,12 +193,21 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * 
 	 * @param graph
 	 * @param modules
+	 * @param input
 	 * @since 0.1.0
 	 */
-	private void addDependencyEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules) {
+	private void addDependencyEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules,
+			MavenWorkspaceArtifactDependencyAnalyzerInput input) {
+		Predicate<? super PomId> filter = getFilter(input);
+
 		for (ModuleData module : modules) {
 			for (Dependency dependency : module.dependencies) {
+				if (!filter.test(new PomId(dependency.getGroupId(), dependency.getArtifactId()))) {
+					continue;
+				}
+
 				PomId dependencyPomId = new PomId(dependency.getGroupId(), dependency.getArtifactId());
+
 				try {
 					graph.addEdge(module.id, dependencyPomId, new DependencyEdge(DependencyEdge.Kind.DEPENDENCY));
 				} catch (Exception e) {
@@ -114,11 +222,13 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * 
 	 * @param graph
 	 * @param modules
+	 * @param input
 	 * @since 0.1.0
 	 */
-	private void addEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules) {
-		addParentEdges(graph, modules);
-		addDependencyEdges(graph, modules);
+	private void addEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules,
+			MavenWorkspaceArtifactDependencyAnalyzerInput input) {
+		addParentEdges(graph, modules, input);
+		addDependencyEdges(graph, modules, input);
 	}
 
 	/**
@@ -126,19 +236,31 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * 
 	 * @param graph
 	 * @param modules
+	 * @param input
 	 * @since 0.1.0
 	 */
-	private void addParentEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules) {
+	private void addParentEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules,
+			MavenWorkspaceArtifactDependencyAnalyzerInput input) {
+		Predicate<? super PomId> filter = getFilter(input);
+
 		for (ModuleData module : modules) {
+			if (module.id.artifactId().equals("vd-util-parent")) {
+				logger.debug("before:\n" + new GraphStringGenerator().convert(graph));
+			}
+
 			Parent parent = module.reader.getModel().getParent();
 
-			if (parent != null) {
+			if (parent != null && filter.test(new PomId(parent.getGroupId(), parent.getArtifactId()))) {
 				PomId parentPomId = new PomId(parent.getGroupId(), parent.getArtifactId());
 				try {
 					graph.addEdge(module.id, parentPomId, new DependencyEdge(DependencyEdge.Kind.PARENT));
 				} catch (Exception e) {
 					logger.warn("Failed to add parent edge from " + module.id + " to " + parentPomId, e);
 				}
+			}
+
+			if (module.id.artifactId().equals("vd-util-parent")) {
+				logger.debug("after:\n" + new GraphStringGenerator().convert(graph));
 			}
 		}
 	}
