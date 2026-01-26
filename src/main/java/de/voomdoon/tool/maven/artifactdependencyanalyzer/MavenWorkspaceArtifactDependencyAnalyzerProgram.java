@@ -21,7 +21,7 @@ public class MavenWorkspaceArtifactDependencyAnalyzerProgram extends Program {
 	/**
 	 * @since 0.1.0
 	 */
-	private static final String OPTION_GROUP_ID_INCLUDE_PATTERN = "group-id-include-pattern";
+	private static final String OPTION_INCLUDE_GROUP_ID = "include-group-id-";
 
 	/**
 	 * @since 0.1.0
@@ -40,8 +40,8 @@ public class MavenWorkspaceArtifactDependencyAnalyzerProgram extends Program {
 	 */
 	@Override
 	protected void initOptions() {
-		optionGroupIdIncludePattern = addOption().longName(OPTION_GROUP_ID_INCLUDE_PATTERN)
-				.hasValue(OPTION_GROUP_ID_INCLUDE_PATTERN).build();
+		optionGroupIdIncludePattern = addOption().longName(OPTION_INCLUDE_GROUP_ID).hasValue(OPTION_INCLUDE_GROUP_ID)
+				.build();
 	}
 
 	/**
