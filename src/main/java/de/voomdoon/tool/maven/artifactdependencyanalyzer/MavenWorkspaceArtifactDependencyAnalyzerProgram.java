@@ -3,9 +3,9 @@ package de.voomdoon.tool.maven.artifactdependencyanalyzer;
 import java.util.regex.Pattern;
 
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
 
 import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.model.DependencyEdge;
 import de.voomdoon.util.cli.Program;
 import de.voomdoon.util.cli.args.Option;
 
@@ -55,7 +55,7 @@ public class MavenWorkspaceArtifactDependencyAnalyzerProgram extends Program {
 				.ifPresent(input::setGroupIdIncludePattern);
 
 		MavenWorkspaceArtifactDependencyAnalyzer analyzer = new MavenWorkspaceArtifactDependencyAnalyzer();
-		Graph<PomId, DefaultEdge> graph = analyzer.run(input);
+		Graph<PomId, DependencyEdge> graph = analyzer.run(input);
 
 		String output = new GraphStringGenerator().convert(graph);
 

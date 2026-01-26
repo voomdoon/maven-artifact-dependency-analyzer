@@ -4,11 +4,11 @@ import java.io.StringWriter;
 import java.util.Map;
 
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.DefaultAttribute;
 import org.jgrapht.nio.dot.DOTExporter;
 
 import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.model.DependencyEdge;
 
 /**
  * DOCME add JavaDoc for
@@ -24,10 +24,10 @@ public class GraphStringGenerator {
 	 * 
 	 * @param graph
 	 * @return
-	 * @since DOCME add inception version number
+	 * @since 0.1.0
 	 */
-	public String convert(Graph<PomId, DefaultEdge> graph) {
-		DOTExporter<PomId, DefaultEdge> exporter = new DOTExporter<>(
+	public String convert(Graph<PomId, DependencyEdge> graph) {
+		DOTExporter<PomId, DependencyEdge> exporter = new DOTExporter<>(
 				v -> (v.groupId() + "_" + v.artifactId()).replaceAll("[^A-Za-z0-9_]", "_"));
 
 		exporter.setVertexAttributeProvider(

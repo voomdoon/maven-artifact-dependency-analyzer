@@ -3,10 +3,10 @@ package de.voomdoon.tool.maven.artifactdependencyanalyzer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.junit.jupiter.api.Test;
 
 import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.model.DependencyEdge;
 
 /**
  * DOCME add JavaDoc for
@@ -22,8 +22,8 @@ class GraphStringGeneratorTest {
 	 */
 	@Test
 	void test_1pom() {
-		DefaultDirectedGraph<PomId, DefaultEdge> graph = new DefaultDirectedGraph<PomId, DefaultEdge>(
-				DefaultEdge.class);
+		DefaultDirectedGraph<PomId, DependencyEdge> graph = new DefaultDirectedGraph<PomId, DependencyEdge>(
+				DependencyEdge.class);
 		graph.addVertex(new PomId("com.test", "test-artifact"));
 		GraphStringGenerator generator = new GraphStringGenerator();
 
@@ -34,7 +34,7 @@ class GraphStringGeneratorTest {
 
 	@Test
 	void test_twoPoms_noDependency() {
-		DefaultDirectedGraph<PomId, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+		DefaultDirectedGraph<PomId, DependencyEdge> graph = new DefaultDirectedGraph<>(DependencyEdge.class);
 		graph.addVertex(new PomId("com.test", "test-artifact1"));
 		graph.addVertex(new PomId("com.test", "test-artifact2"));
 		GraphStringGenerator generator = new GraphStringGenerator();

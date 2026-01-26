@@ -12,11 +12,11 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Parent;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 
 import de.voomdoon.logging.LogManager;
 import de.voomdoon.logging.Logger;
 import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.model.DependencyEdge;
 
 /**
  * DOCME add JavaDoc for
@@ -78,8 +78,8 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * @return
 	 * @since 0.1.0
 	 */
-	public Graph<PomId, DefaultEdge> run(MavenWorkspaceArtifactDependencyAnalyzerInput input) {
-		Graph<PomId, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
+	public Graph<PomId, DependencyEdge> run(MavenWorkspaceArtifactDependencyAnalyzerInput input) {
+		Graph<PomId, DependencyEdge> graph = new DefaultDirectedGraph<>(DependencyEdge.class);
 
 		List<ModuleData> modules = new ArrayList<>();
 
@@ -94,13 +94,17 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * 
 	 * @param graph
 	 * @param modules
-	 * @since DOCME add inception version number
+	 * @since 0.1.0
 	 */
-	private void addDependencyEdges(Graph<PomId, DefaultEdge> graph, List<ModuleData> modules) {
+	private void addDependencyEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules) {
 		for (ModuleData module : modules) {
 			for (Dependency dependency : module.dependencies) {
 				PomId dependencyPomId = new PomId(dependency.getGroupId(), dependency.getArtifactId());
-				graph.addEdge(module.id, dependencyPomId);
+				try {
+					graph.addEdge(module.id, dependencyPomId, new DependencyEdge(DependencyEdge.Kind.DEPENDENCY));
+				} catch (Exception e) {
+					logger.warn("Failed to add dependency edge from " + module.id + " to " + dependencyPomId, e);
+				}
 			}
 		}
 	}
@@ -112,7 +116,7 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * @param modules
 	 * @since 0.1.0
 	 */
-	private void addEdges(Graph<PomId, DefaultEdge> graph, List<ModuleData> modules) {
+	private void addEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules) {
 		addParentEdges(graph, modules);
 		addDependencyEdges(graph, modules);
 	}
@@ -124,13 +128,17 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * @param modules
 	 * @since 0.1.0
 	 */
-	private void addParentEdges(Graph<PomId, DefaultEdge> graph, List<ModuleData> modules) {
+	private void addParentEdges(Graph<PomId, DependencyEdge> graph, List<ModuleData> modules) {
 		for (ModuleData module : modules) {
 			Parent parent = module.reader.getModel().getParent();
 
 			if (parent != null) {
 				PomId parentPomId = new PomId(parent.getGroupId(), parent.getArtifactId());
-				graph.addEdge(module.id, parentPomId);
+				try {
+					graph.addEdge(module.id, parentPomId, new DependencyEdge(DependencyEdge.Kind.PARENT));
+				} catch (Exception e) {
+					logger.warn("Failed to add parent edge from " + module.id + " to " + parentPomId, e);
+				}
 			}
 		}
 	}
@@ -143,7 +151,7 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 	 * @param modules
 	 * @since 0.1.0
 	 */
-	private void addVertecies(MavenWorkspaceArtifactDependencyAnalyzerInput input, Graph<PomId, DefaultEdge> graph,
+	private void addVertecies(MavenWorkspaceArtifactDependencyAnalyzerInput input, Graph<PomId, DependencyEdge> graph,
 			List<ModuleData> modules) {
 		collectPomFiles(Path.of(input.getInputDirectory())).stream().map(pomPath -> {
 			try {

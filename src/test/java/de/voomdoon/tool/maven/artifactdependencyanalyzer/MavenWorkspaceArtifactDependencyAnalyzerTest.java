@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultEdge;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import de.voomdoon.testing.file.TempFileExtension;
 import de.voomdoon.testing.file.TempInputDirectory;
 import de.voomdoon.tool.maven.artifactdependencyanalyzer.PomReader.PomId;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.model.DependencyEdge;
+import de.voomdoon.tool.maven.artifactdependencyanalyzer.model.DependencyEdge.Kind;
 
 /**
  * DOCME add JavaDoc for
@@ -57,7 +58,8 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 				assertThat(actual.edgeSet()).hasSize(1);
 				Object actualEdge = actual.getEdge(new PomId(GROUP_ID, "test-service"),
 						new PomId(GROUP_ID, "test-util"));
-				assertThat(actualEdge).isNotNull();
+				assertThat(actualEdge).isInstanceOfSatisfying(DependencyEdge.class,
+						edge -> assertThat(edge).extracting(DependencyEdge::getKind).isEqualTo(Kind.DEPENDENCY));
 			}
 		}
 
@@ -82,7 +84,8 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 				assertThat(actual.edgeSet()).hasSize(1);
 				Object actualEdge = actual.getEdge(new PomId(GROUP_ID, "test-util"),
 						new PomId(GROUP_ID, "test-parent"));
-				assertThat(actualEdge).isNotNull();
+				assertThat(actualEdge).isInstanceOfSatisfying(DependencyEdge.class,
+						edge -> assertThat(edge).extracting(DependencyEdge::getKind).isEqualTo(Kind.PARENT));
 			}
 		}
 	}
@@ -171,7 +174,7 @@ class MavenWorkspaceArtifactDependencyAnalyzerTest {
 	 * @return
 	 * @since 0.1.0
 	 */
-	private Graph<PomId, DefaultEdge> run(String testData, String inputDirectory) {
+	private Graph<PomId, DependencyEdge> run(String testData, String inputDirectory) {
 		try {
 			FileUtils.copyDirectory(new File("src/test/resources/workspace/" + testData), new File(inputDirectory));
 		} catch (IOException e) {
