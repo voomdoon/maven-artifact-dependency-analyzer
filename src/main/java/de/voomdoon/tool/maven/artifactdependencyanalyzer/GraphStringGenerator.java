@@ -28,7 +28,7 @@ public class GraphStringGenerator {
 	 */
 	public String convert(Graph<PomId, DependencyEdge> graph) {
 		DOTExporter<PomId, DependencyEdge> exporter = new DOTExporter<>(
-				v -> (v.groupId() + "_" + v.artifactId()).replaceAll("[^A-Za-z0-9_]", "_"));
+				v -> (v.groupId() + "__" + v.artifactId()).replaceAll("[^A-Za-z0-9_]", "_"));
 
 		exporter.setVertexAttributeProvider(
 				v -> Map.of(DotAttributes.LABEL, DefaultAttribute.createAttribute(v.groupId() + ":" + v.artifactId())));
