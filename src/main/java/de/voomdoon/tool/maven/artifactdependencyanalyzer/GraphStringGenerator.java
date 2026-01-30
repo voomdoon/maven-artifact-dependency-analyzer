@@ -33,6 +33,9 @@ public class GraphStringGenerator {
 		exporter.setVertexAttributeProvider(
 				v -> Map.of(DotAttributes.LABEL, DefaultAttribute.createAttribute(v.groupId() + ":" + v.artifactId())));
 
+		// FEATURE make configurable
+		exporter.setGraphAttributeProvider(() -> Map.of("ranksep", DefaultAttribute.createAttribute("10.0")));
+
 		StringWriter writer = new StringWriter();
 		exporter.exportGraph(graph, writer);
 
