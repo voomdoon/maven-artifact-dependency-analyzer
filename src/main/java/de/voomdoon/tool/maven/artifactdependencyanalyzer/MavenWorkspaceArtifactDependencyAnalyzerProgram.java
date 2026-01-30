@@ -1,5 +1,9 @@
 package de.voomdoon.tool.maven.artifactdependencyanalyzer;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 import org.jgrapht.Graph;
@@ -31,6 +35,11 @@ public class MavenWorkspaceArtifactDependencyAnalyzerProgram extends Program {
 	/**
 	 * @since 0.1.0
 	 */
+	private static final String OPTION_OUTPUT = "output";
+
+	/**
+	 * @since 0.1.0
+	 */
 	public static void main(String[] args) {
 		Program.run(args);
 	}
@@ -48,10 +57,16 @@ public class MavenWorkspaceArtifactDependencyAnalyzerProgram extends Program {
 	/**
 	 * @since 0.1.0
 	 */
+	private Option optionOutput;
+
+	/**
+	 * @since 0.1.0
+	 */
 	@Override
 	protected void initOptions() {
 		optionIncludeGroupId = addOption().longName(OPTION_INCLUDE_GROUP_ID).hasValue(OPTION_INCLUDE_GROUP_ID).build();
 		optionFocus = addOption().longName(OPTION_FOCUS).hasValue(OPTION_FOCUS).build();
+		optionOutput = addOption().longName(OPTION_OUTPUT).hasValue(OPTION_OUTPUT).build();
 	}
 
 	/**
@@ -70,7 +85,27 @@ public class MavenWorkspaceArtifactDependencyAnalyzerProgram extends Program {
 
 		String output = new GraphStringGenerator().convert(graph);
 
-		System.out.println(output);
+		output(output);
+	}
+
+	/**
+	 * DOCME add JavaDoc for method output
+	 * 
+	 * @param output
+	 * @since 0.1.0
+	 */
+	private void output(String output) {
+		String filePath = getArguments().getOptionValue(optionOutput).map(Object::toString).orElse(null);
+
+		if (filePath != null) {
+			try {
+				Files.write(Paths.get(filePath), output.getBytes(StandardCharsets.UTF_8));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			System.out.println(output);
+		}
 	}
 
 	/**

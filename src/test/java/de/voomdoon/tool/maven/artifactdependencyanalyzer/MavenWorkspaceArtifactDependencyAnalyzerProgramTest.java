@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.SoftAssertionsProvider.ThrowingRunnable;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.voomdoon.testing.file.TempFileExtension;
 import de.voomdoon.testing.file.TempInputDirectory;
+import de.voomdoon.testing.file.TempOutputFile;
 import de.voomdoon.testing.system.SystemPrintStreamCapturer;
 import de.voomdoon.testing.tests.TestBase;
 import de.voomdoon.util.cli.testing.ProgramTestingUtil;
@@ -56,6 +58,21 @@ class MavenWorkspaceArtifactDependencyAnalyzerProgramTest extends TestBase {
 		SystemPrintStreamCapturer output = run("2poms", inputDirectory);
 
 		assertThat(output.getOut()).doesNotContain("test-artifact2");
+	}
+
+	/**
+	 * @since 0.1.0
+	 */
+	@Test
+	void test_optionOutput(@TempInputDirectory String inputDirectory, @TempOutputFile File outputFile)
+			throws InvocationTargetException {
+		logTestStart();
+
+		args.addOption("output", outputFile.toString());
+
+		run("artifact1", inputDirectory);
+
+		assertThat(outputFile).exists().content(StandardCharsets.UTF_8).contains("test-artifact1");
 	}
 
 	/**
