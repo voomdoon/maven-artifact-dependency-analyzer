@@ -244,10 +244,6 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 		Predicate<? super PomId> filter = getFilter(input);
 
 		for (ModuleData module : modules) {
-			if (module.id.artifactId().equals("vd-util-parent")) {
-				logger.debug("before:\n" + new GraphStringGenerator().convert(graph));
-			}
-
 			Parent parent = module.reader.getModel().getParent();
 
 			if (parent != null && filter.test(new PomId(parent.getGroupId(), parent.getArtifactId()))) {
@@ -257,10 +253,6 @@ public class MavenWorkspaceArtifactDependencyAnalyzer {
 				} catch (Exception e) {
 					logger.warn("Failed to add parent edge from " + module.id + " to " + parentPomId, e);
 				}
-			}
-
-			if (module.id.artifactId().equals("vd-util-parent")) {
-				logger.debug("after:\n" + new GraphStringGenerator().convert(graph));
 			}
 		}
 	}
