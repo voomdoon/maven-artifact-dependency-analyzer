@@ -33,12 +33,23 @@ public class GraphStringGenerator {
 		exporter.setVertexAttributeProvider(
 				v -> Map.of(DotAttributes.LABEL, DefaultAttribute.createAttribute(v.groupId() + ":" + v.artifactId())));
 
-		// FEATURE make configurable
+		// TESTME FEATURE make ranksep configurable
 		exporter.setGraphAttributeProvider(() -> Map.of("ranksep", DefaultAttribute.createAttribute("10.0")));
 
 		StringWriter writer = new StringWriter();
 		exporter.exportGraph(graph, writer);
 
-		return writer.toString();
+		// TESTME FEATURE make default node style configurable
+		String dot = writer.toString();
+		int firstBrace = dot.indexOf(';');
+
+		if (firstBrace != -1) {
+			int insertPos = firstBrace + 1;
+			// Insert after opening brace, preserving newline/indent
+			dot = dot.substring(0, insertPos) + "\n  node [style=filled, fillcolor=\"white\"];"
+					+ dot.substring(insertPos);
+		}
+
+		return dot;
 	}
 }
