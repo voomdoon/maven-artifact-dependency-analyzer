@@ -14,7 +14,7 @@
 	<version>0.1.0-SNAPSHOT</version>
 
 	<properties>
-		<maven-model.version>3.9.15</maven-model.version>
+		<maven-model.version>3.9.16</maven-model.version>
 	</properties>
 	
 	<dependencies>
